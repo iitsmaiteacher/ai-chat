@@ -3,127 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITSM AI Teacher - Live Chat</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .chat-container { height: calc(100vh - 180px); }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+    <title>IITSM AI Teacher - Chat</title>
+    
+    <!-- n8n Chat CSS -->
+    <link href="https://cdn.jsdelivr.net" rel="stylesheet" />
 </head>
 <body class="bg-slate-50">
 
-    <div class="max-w-md mx-auto bg-white shadow-2xl min-h-screen flex flex-col">
-        <!-- Header -->
-        <div class="bg-indigo-700 p-4 text-white flex justify-between items-center shadow-md">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center text-indigo-700 font-bold">IT</div>
-                <div>
-                    <h1 class="font-bold text-sm">IITSM AI Teacher</h1>
-                    <p class="text-[10px] text-indigo-200">Live Support 2026</p>
-                </div>
-            </div>
-            <div class="text-[10px] bg-indigo-800 px-2 py-1 rounded">
-                ID: <span id="licenseDisplay">...</span>
-            </div>
-        </div>
-
-        <!-- Chat Box -->
-        <div id="chatbox" class="chat-container overflow-y-auto p-4 space-y-4 bg-slate-50/50">
-            <!-- Welcome -->
-            <div class="flex justify-start">
-                <div class="bg-white border border-slate-200 p-3 rounded-2xl rounded-tl-none shadow-sm text-sm text-slate-800">
-                    வணக்கம்! உங்களின் கல்வி தொடர்பான கேள்விகளைக் கேட்கலாம்.
-                </div>
-            </div>
-        </div>
-
-        <!-- Input Section -->
-        <div class="p-4 bg-white border-t">
-            <div class="flex items-center gap-2">
-                <input type="text" id="userMessage" 
-                    class="flex-grow border border-slate-200 p-3 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm" 
-                    placeholder="கேள்வியைத் தட்டச்சு செய்க...">
-                <button id="sendBtn" class="bg-indigo-600 text-white p-3 rounded-xl hover:bg-indigo-700 transition-all">
-                    <svg xmlns="http://www.w3.org" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                    </svg>
-                </button>
-            </div>
-        </div>
+    <div style="text-align: center; margin-top: 50px; font-family: sans-serif;">
+        <h1>IITSM AI Teacher Chat System</h1>
+        <p>வலது கீழ் பக்கத்தில் உள்ள சாட் குமிழியை (Chat Bubble) கிளிக் செய்யவும்.</p>
+        <p style="font-size: 12px; color: #666;">License ID: <span id="ldisplay">Loading...</span></p>
     </div>
 
-    <script>
-        // 1. Production Webhook URL
-        const WEBHOOK_URL = "https://n8n.srv933517.hstgr.cloud/webhook/e3c22e61-682d-464a-b0c6-b5933711303f";
+    <!-- n8n Chat JavaScript -->
+    <script type="module">
+        import { createChat } from 'https://cdn.jsdelivr.net';
 
-        // 2. Metadata Collection
+        // 1. URL-லிருந்து license_id-ஐ எடுக்கிறது
         const params = new URLSearchParams(window.location.search);
-        const license_id = params.get("license_id") || "GUEST";
-        document.getElementById("licenseDisplay").innerText = license_id.substring(0, 8) + "...";
+        const licenseID = params.get("license_id") || "NO_LICENSE_FOUND";
+        
+        document.getElementById("ldisplay").innerText = licenseID;
 
-        const chatbox = document.getElementById("chatbox");
-        const userMsgInput = document.getElementById("userMessage");
-        const sendBtn = document.getElementById("sendBtn");
-
-        function addMessage(role, text) {
-            const isUser = role === 'user';
-            const msgHtml = `
-                <div class="flex ${isUser ? 'justify-end' : 'justify-start'} animate-fadeIn">
-                    <div class="${isUser ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-200 text-slate-800'} p-3 rounded-2xl ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} shadow-sm max-w-[85%] text-sm">
-                        ${text}
-                    </div>
-                </div>
-            `;
-            chatbox.insertAdjacentHTML('beforeend', msgHtml);
-            chatbox.scrollTop = chatbox.scrollHeight;
-        }
-
-        async function sendMessage() {
-            const msg = userMsgInput.value.trim();
-            if (!msg) return;
-
-            addMessage('user', msg);
-            userMsgInput.value = "";
-
-            // Show Loading
-            const loadingId = "loading-" + Date.now();
-            chatbox.insertAdjacentHTML('beforeend', `<div id="${loadingId}" class="text-[10px] text-slate-400 italic">AI பதிலளிக்கிறது...</div>`);
-            chatbox.scrollTop = chatbox.scrollHeight;
-
-            try {
-                const response = await fetch(WEBHOOK_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        license_id: license_id,
-                        message: msg,
-                        source_url: window.location.href, // தற்போதைய URL-ஐ அனுப்புகிறது
-                        timestamp: new Date().toISOString()
-                    })
-                });
-
-                const data = await response.json();
-                document.getElementById(loadingId).remove();
-
-                // n8n பதில் (Response)
-                if (data && (data.reply || data.output)) {
-                    addMessage('ai', data.reply || data.output);
-                } else {
-                    addMessage('ai', "மன்னிக்கவும், என்னால் இப்போது பதிலளிக்க முடியவில்லை.");
-                }
-
-            } catch (error) {
-                if(document.getElementById(loadingId)) document.getElementById(loadingId).remove();
-                addMessage('ai', "Error: n8n சர்வர் இணைப்பில் சிக்கல் உள்ளது. CORS மற்றும் Webhook நிலையைச் சரிபார்க்கவும்.");
-                console.error("Connection Error:", error);
+        // 2. n8n Chat-ஐ உருவாக்குகிறது
+        createChat({
+            webhookUrl: 'https://n8n.srv933517.hstgr.cloud/webhook/dd36755c-72c7-40a1-823a-c54d493664c0/chat',
+            
+            // n8n-க்கு தானாகவே டேட்டாவை அனுப்ப metadata பயன்படுகிறது
+            metadata: {
+                license_id: licenseID,
+                source_url: window.location.href, // தற்போதைய URL
+                platform: "GitHub Pages"
+            },
+            
+            showWelcomeScreen: true,
+            title: 'IITSM AI Teacher',
+            welcomeMessage: 'வணக்கம்! நான் உங்களுக்கு எப்படி உதவ முடியும்?',
+            
+            style: {
+                primaryColor: '#4f46e5', // Indigo color
             }
-        }
-
-        sendBtn.addEventListener("click", sendMessage);
-        userMsgInput.addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
+        });
     </script>
+
 </body>
 </html>
