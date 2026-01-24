@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IITSM AI Teacher Chat</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f8fafc; margin:0; padding:0; }
+#chatbox { height: 400px; overflow-y: auto; border:1px solid #ccc; padding:10px; margin:10px; background:#fff; }
+#userMessage { width: 75%; padding:8px; }
+#sendBtn { padding:8px 12px; }
+.message.user { color:#fff; background:#6366f1; padding:5px 10px; border-radius:5px; margin:5px 0; display:inline-block; }
+.message.ai { color:#334155; background:#e2e8f0; padding:5px 10px; border-radius:5px; margin:5px 0; display:inline-block; }
+</style>
+</head>
+<body>
+
+<h2 style="text-align:center;">IITSM AI Teacher Chat</h2>
+
+<div id="chatbox"></div>
+<input type="text" id="userMessage" placeholder="Type your question..." />
+<button id="sendBtn">Send</button>
+
+<script>
+// 1️⃣ Read license_id from URL
+const params = new URLSearchParams(window.location.search);
+const license_id = params.get("license_id");
+if(!license_id) alert("Warning: license_id missing!");
+
+// 2️⃣ Chatbox DOM
+const chatbox = document.getElementById("chatbox");
+
+// 3️⃣ Send message function
+document.getElementById("sendBtn").addEventListener("click", async () => {
+  const msg = document.getElementById("userMessage").value.trim();
+  if(!msg) return;
+
+  // Show user message
+  chatbox.innerHTML += `<div class="message user"><b>You:</b> ${msg}</div>`;
+
+  // POST to n8n webhook
+  try {
+    const res = await fetch("https://n8n.srv933517.hstgr.cloud/webhook/dd36755c-72c7-40a1-823a-c54d493664c0/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        license_id: license_id,
+        message: msg
+      })
+    });
+    const data = await res.json();
+
+    // Show AI response
+    if(data?.reply){
+      chatbox.innerHTML += `<div class="message ai"><b>AI:</b> ${data.reply}</div>`;
+      chatbox.scrollTop = chatbox.scrollHeight;
+    }
+  } catch(err){
+    chatbox.innerHTML += `<div class="message ai" style="color:red;"><b>AI:</b> Error connecting to server</div>`;
+  }
+
+  document.getElementById("userMessage").value = "";
+  chatbox.scrollTop = chatbox.scrollHeight;
+});
+</script>
+
+</body>
+</html>
