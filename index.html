@@ -8,18 +8,18 @@
     <!-- n8n Chat CSS -->
     <link href="https://cdn.jsdelivr.net" rel="stylesheet" />
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
-        .license-box { background: #eef2ff; color: #4f46e5; padding: 10px; border-radius: 8px; font-weight: bold; margin-top: 10px; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f3f4f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-align: center; }
+        .license-tag { background: #dee2ff; color: #4338ca; padding: 8px 15px; border-radius: 50px; font-weight: 600; margin-top: 15px; display: inline-block; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h1 style="color: #1e293b;">IITSM AI Teacher Chat System</h1>
-        <p style="color: #64748b;">வலது கீழ் பக்கத்தில் உள்ள சாட் குமிழியை கிளிக் செய்யவும்.</p>
-        <div class="license-box">
-            License ID: <span id="ldisplay">கண்டறியப்படவில்லை</span>
+    <div class="container">
+        <h1 style="color: #111827; margin-bottom: 10px;">IITSM AI Teacher Chat System</h1>
+        <p style="color: #4b5563;">வலது கீழ் பக்கத்தில் உள்ள சாட் குமிழியை கிளிக் செய்யவும்.</p>
+        <div class="license-tag">
+            License ID: <span id="ldisplay">Checking...</span>
         </div>
     </div>
 
@@ -27,25 +27,26 @@
     <script type="module">
         import { createChat } from 'https://cdn.jsdelivr.net';
 
-        // 1. URL பாராமீட்டரைச் சரியாகப் பெறுதல்
+        // 1. URL-லிருந்து license_id ஐப் பெறுகிறது
         const urlParams = new URLSearchParams(window.location.search);
-        const licenseID = urlParams.get("license_id") || "Unknown-User";
+        const licenseID = urlParams.get("license_id") || "ID NOT FOUND";
         
-        // UI-ல் லைசென்ஸ் ஐடியைக் காட்டுதல்
+        // திரையில் ஐடியைக் காட்டுகிறது
         document.getElementById("ldisplay").innerText = licenseID;
 
-        // 2. n8n Chat Initialization
-        createChat({
-            webhookUrl: 'https://n8n.srv933517.hstgr.cloud',
-            mode: 'window',
-            showWelcomeScreen: true,
-            title: 'IITSM AI Support',
-            welcomeMessage: 'வணக்கம்! நான் உங்களுக்கு எப்படி உதவ முடியும்?',
-            // Metadata வழியாக n8n-க்கு தகவல்களை அனுப்புதல்
-            metadata: {
-                license_id: licenseID,
-                url: window.location.href
-            }
+        // 2. n8n Chat-ஐ லோட் செய்கிறது
+        window.addEventListener('DOMContentLoaded', () => {
+            createChat({
+                webhookUrl: 'https://n8n.srv933517.hstgr.cloud',
+                mode: 'window',
+                showWelcomeScreen: true,
+                title: 'IITSM AI Support',
+                welcomeMessage: 'வணக்கம்! நான் உங்களுக்கு எப்படி உதவ முடியும்?',
+                metadata: {
+                    license_id: licenseID,
+                    full_url: window.location.href
+                }
+            });
         });
     </script>
 
