@@ -3,46 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITSM AI Teacher - Chat</title>
+    <title>IITSM AI Teacher Chat</title>
     
     <!-- n8n Chat CSS -->
     <link href="https://cdn.jsdelivr.net" rel="stylesheet" />
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
+        .license-box { background: #eef2ff; color: #4f46e5; padding: 10px; border-radius: 8px; font-weight: bold; margin-top: 10px; }
+    </style>
 </head>
-<body class="bg-slate-50">
+<body>
 
-    <div style="text-align: center; margin-top: 50px; font-family: sans-serif;">
-        <h1>IITSM AI Teacher Chat System</h1>
-        <p>வலது கீழ் பக்கத்தில் உள்ள சாட் குமிழியை (Chat Bubble) கிளிக் செய்யவும்.</p>
-        <p style="font-size: 12px; color: #666;">License ID: <span id="ldisplay">Loading...</span></p>
+    <div class="card">
+        <h1 style="color: #1e293b;">IITSM AI Teacher Chat System</h1>
+        <p style="color: #64748b;">வலது கீழ் பக்கத்தில் உள்ள சாட் குமிழியை கிளிக் செய்யவும்.</p>
+        <div class="license-box">
+            License ID: <span id="ldisplay">கண்டறியப்படவில்லை</span>
+        </div>
     </div>
 
     <!-- n8n Chat JavaScript -->
     <script type="module">
         import { createChat } from 'https://cdn.jsdelivr.net';
 
-        // 1. URL-லிருந்து license_id-ஐ எடுக்கிறது
-        const params = new URLSearchParams(window.location.search);
-        const licenseID = params.get("license_id") || "NO_LICENSE_FOUND";
+        // 1. URL பாராமீட்டரைச் சரியாகப் பெறுதல்
+        const urlParams = new URLSearchParams(window.location.search);
+        const licenseID = urlParams.get("license_id") || "Unknown-User";
         
+        // UI-ல் லைசென்ஸ் ஐடியைக் காட்டுதல்
         document.getElementById("ldisplay").innerText = licenseID;
 
-        // 2. n8n Chat-ஐ உருவாக்குகிறது
+        // 2. n8n Chat Initialization
         createChat({
-            webhookUrl: 'https://n8n.srv933517.hstgr.cloud/webhook/dd36755c-72c7-40a1-823a-c54d493664c0/chat',
-            
-            // n8n-க்கு தானாகவே டேட்டாவை அனுப்ப metadata பயன்படுகிறது
+            webhookUrl: 'https://n8n.srv933517.hstgr.cloud',
+            mode: 'window',
+            showWelcomeScreen: true,
+            title: 'IITSM AI Support',
+            welcomeMessage: 'வணக்கம்! நான் உங்களுக்கு எப்படி உதவ முடியும்?',
+            // Metadata வழியாக n8n-க்கு தகவல்களை அனுப்புதல்
             metadata: {
                 license_id: licenseID,
-                source_url: window.location.href, // தற்போதைய URL
-                platform: "GitHub Pages"
-            },
-            
-            showWelcomeScreen: true,
-            title: 'IITSM AI Teacher',
-            welcomeMessage: 'வணக்கம்! நான் உங்களுக்கு எப்படி உதவ முடியும்?',
-            
-            style: {
-                primaryColor: '#4f46e5', // Indigo color
+                url: window.location.href
             }
         });
     </script>
