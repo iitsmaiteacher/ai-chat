@@ -34,6 +34,7 @@
             flex-direction: column;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
             position: relative;
+            overflow: hidden; /* Ensures sliding elements stay inside */
         }
 
         /* Header */
@@ -71,6 +72,7 @@
             flex-direction: column;
             gap: 15px;
             scroll-behavior: smooth;
+            padding-bottom: 80px; /* Space for controls */
         }
 
         /* Bubbles */
@@ -102,6 +104,9 @@
             padding: 20px;
             background: white;
             border-top: 1px solid #e5e7eb;
+            position: relative;
+            z-index: 5;
+            transition: transform 0.4s ease; /* Smooth hiding animation */
         }
 
         .action-btn {
@@ -138,7 +143,8 @@
             text-align: center;
             padding: 30px;
             box-sizing: border-box;
-            animation: slideUp 0.5s ease;
+            z-index: 20; /* Stays on top of everything */
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); /* Smooth slide up */
         }
 
         .premium-card {
@@ -237,6 +243,7 @@
     const chatWindow = document.getElementById("chat-window");
     const topicBtn = document.getElementById("topic-btn");
     const nextBtn = document.getElementById("next-btn");
+    const controlsDiv = document.getElementById("controls");
 
     function askQuestion() {
         if (currentStep >= quizData.length) return;
@@ -280,7 +287,12 @@
             // Auto scroll
             chatWindow.scrollTop = chatWindow.scrollHeight;
         } else {
-            // Show Final Screen
+            // === LOGIC TO HIDE CONTROLS & SHOW FINAL SCREEN ===
+            
+            // 1. Hide the bottom controls completely
+            controlsDiv.style.display = 'none'; 
+            
+            // 2. Show Final Screen with Slide Up Animation
             document.getElementById("final-screen").style.display = "flex";
         }
     }
