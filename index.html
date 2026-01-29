@@ -3,330 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IITSM AI Teacher - Interactive Chat</title>
+    <title>8th Science Self-Assessment | IITM AI Teacher</title>
     <style>
         :root {
+            --glass: rgba(255, 255, 255, 0.98);
             --primary: #4f46e5;
-            --primary-dark: #4338ca;
-            --bg: #f3f4f6;
-            --chat-bg: #ffffff;
-            --user-bubble: #4f46e5;
-            --bot-bubble: #f1f5f9;
+            --success: #10b981;
+            --error: #ef4444;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
             margin: 0;
             display: flex;
+            align-items: center;
             justify-content: center;
-            height: 100vh;
-            overflow: hidden;
+            color: #1f2937;
         }
 
-        /* Mobile Container */
-        #app-container {
+        #quiz-card {
+            background: var(--glass);
+            width: 90%;
+            max-width: 420px;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .progress-bar-wrap {
             width: 100%;
-            max-width: 450px;
-            background: var(--chat-bg);
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        #progress-fill {
             height: 100%;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            position: relative;
-            overflow: hidden; /* Ensures sliding elements stay inside */
-        }
-
-        /* Header */
-        header {
-            background: white;
-            padding: 15px;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 10;
-        }
-
-        .avatar {
-            width: 40px;
-            height: 40px;
             background: var(--primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 20px;
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
         }
 
-        .header-info h3 { margin: 0; font-size: 16px; color: #1f2937; }
-        .header-info p { margin: 0; font-size: 12px; color: #10b981; font-weight: 600; }
+        .badge {
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
 
-        /* Chat Area */
-        #chat-window {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
+        .question {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 20px 0;
+            text-align: left;
+            line-height: 1.4;
+        }
+
+        .options-list {
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            scroll-behavior: smooth;
-            padding-bottom: 80px; /* Space for controls */
+            gap: 12px;
         }
 
-        /* Bubbles */
-        .message {
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            font-size: 15px;
-            line-height: 1.5;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .bot-msg {
-            background: var(--bot-bubble);
-            color: #374151;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-        }
-
-        .user-msg {
-            background: var(--user-bubble);
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-        }
-
-        /* Controls Area */
-        #controls {
-            padding: 20px;
-            background: white;
-            border-top: 1px solid #e5e7eb;
-            position: relative;
-            z-index: 5;
-            transition: transform 0.4s ease; /* Smooth hiding animation */
-        }
-
-        .action-btn {
-            width: 100%;
+        .opt-btn {
             padding: 15px;
-            background: white;
-            border: 2px solid var(--primary);
-            color: var(--primary);
+            border: 2px solid #f3f4f6;
             border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
+            background: #fff;
             cursor: pointer;
+            text-align: left;
+            font-size: 1rem;
             transition: 0.2s;
         }
 
-        .action-btn:hover { background: #eef2ff; }
+        .opt-btn:hover { border-color: var(--primary); background: #f9fafb; }
+        
+        .correct { background: #d1fae5 !important; border-color: var(--success) !important; color: #065f46; font-weight: bold; }
+        .wrong { background: #fee2e2 !important; border-color: var(--error) !important; color: #991b1b; }
 
         #next-btn {
+            width: 100%;
+            padding: 15px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 12px;
             background: var(--primary);
             color: white;
-            border: none;
-            display: none; /* Hidden initially */
-        }
-
-        /* Final Screen Overlay */
-        #final-screen {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.98);
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 30px;
-            box-sizing: border-box;
-            z-index: 20; /* Stays on top of everything */
-            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); /* Smooth slide up */
-        }
-
-        .premium-card {
-            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(79, 70, 229, 0.3);
-            width: 100%;
-        }
-
-        .download-btn {
-            display: block;
-            background: white;
-            color: #312e81;
-            text-decoration: none;
-            padding: 15px;
-            border-radius: 10px;
             font-weight: bold;
-            margin-top: 20px;
-            box-shadow: 0 4px 0 #cbd5e1;
+            font-size: 1rem;
+            cursor: pointer;
+            display: none;
         }
-        
-        .download-btn:active { transform: translateY(4px); box-shadow: none; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        /* Result Screen Styling */
+        .download-box {
+            background: #111827;
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
 
+        .btn-google {
+            display: inline-block;
+            background: #fff;
+            color: #000;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
 
-<div id="app-container">
-    <header>
-        <div class="avatar">🤖</div>
-        <div class="header-info">
-            <h3>IITSM AI Teacher</h3>
-            <p>● Online</p>
-        </div>
-    </header>
-
-    <div id="chat-window">
-        <div class="message bot-msg">Hello! I am your AI Tutor. Tap a topic below to learn instantly. 👇</div>
+<div id="quiz-card">
+    <div id="quiz-ui">
+        <span class="badge">8th SCIENCE ASSESSMENT</span>
+        <div class="progress-bar-wrap"><div id="progress-fill"></div></div>
+        <div id="q-number" style="font-size: 0.8rem; color: #6b7280; text-align: left;">Question 1 of 10</div>
+        <div class="question" id="q-text">Loading...</div>
+        <div class="options-list" id="opt-container"></div>
+        <button id="next-btn" onclick="loadNext()">Next Question →</button>
     </div>
 
-    <div id="controls">
-        <button id="topic-btn" class="action-btn" onclick="askQuestion()">Topic 1: Why is the sky blue?</button>
-        <button id="next-btn" class="action-btn" onclick="nextQuestion()">Next Topic ➡️</button>
-    </div>
-
-    <div id="final-screen">
-        <div class="premium-card">
-            <div style="font-size: 50px;">🎓</div>
-            <h2>Learning made easy!</h2>
-            <p style="opacity: 0.9; margin-top: 10px; line-height: 1.6;">
-                Did you like this chat style? <br>
-                The <b>IITSM AI Teacher App</b> explains <i>every</i> chapter in Math & Science just like this ( 6- 10 SCIENCE AND MATHS ) .
-            </p>
-            <hr style="border-color: rgba(255,255,255,0.2); margin: 20px 0;">
-            <p style="font-size: 14px;">👇 Click below to get your personal AI Tutor</p>
-            
-            <a href="https://play.google.com/store/apps/details?id=com.npdsoftwares.iitsmaiteacher&pcampaignid=web_share" class="download-btn">
-                Download App Now
+    <div id="result-ui" style="display: none;">
+        <div style="font-size: 4rem;">🎉</div>
+        <h2>Great Job!</h2>
+        <p>Your Science IQ Score:</p>
+        <h1 id="score-text" style="font-size: 3rem; color: var(--primary); margin: 10px 0;">0/10</h1>
+        
+        <div class="download-box">
+            <p style="margin: 0; font-size: 1rem;">Want to improve your score?</p>
+            <p style="font-size: 0.8rem; color: #9ca3af; margin-top: 5px;">Get instant step-by-step help for any Science or Math doubt.</p>
+            <a href="https://play.google.com/store/apps/details?id=com.npdsoftwares.iitsmaiteacher&pcampaignid=web_share" target="_blank" class="btn-google">
+                🚀 Download IITM AI Teacher
             </a>
         </div>
-        <p style="margin-top: 20px; font-size: 12px; color: #6b7280;">Powered by IITSM AI Teacher </p>
+        
+        <p style="font-size: 0.8rem; margin-top: 15px; color: #4b5563;">Share this quiz with your classmates!</p>
+        <button onclick="location.reload()" style="background:none; border:none; color:var(--primary); cursor:pointer; font-weight:bold;">Retake Quiz</button>
     </div>
 </div>
 
 <script>
-    // 5 Curated Questions & Answers
     const quizData = [
-        {
-            q: "Why is the sky blue?",
-            a: "Sunlight contains all colors. When it hits the atmosphere, gases scatter the blue light more than other colors because it travels in shorter waves. That's why we see blue! 🌤️"
-        },
-        {
-            q: "What is Gravity?",
-            a: "Gravity is an invisible force that pulls everything toward the center of the Earth. It keeps us on the ground and makes apples fall down instead of up! 🍎"
-        },
-        {
-            q: "What is Photosynthesis?",
-            a: "It is the process plants use to eat! They take sunlight, water, and carbon dioxide to make food (sugar) and release Oxygen for us to breathe. 🌱"
-        },
-        {
-            q: "What is Pi (π)?",
-            a: "Pi (3.14...) is a special number. No matter how big or small a circle is, if you divide its circumference by its diameter, you always get Pi! 🥧"
-        },
-        {
-            q: "Why do we blink?",
-            a: "Blinking spreads tears across your eyes to keep them moist and clean. It also protects your eyes from dust and bright light. It's like a windshield wiper! 👀"
-        }
+        { q: "Which of the following is a non-metal but a good conductor of electricity?", a: ["Sulphur", "Phosphorus", "Graphite", "Iodine"], c: 2 },
+        { q: "The process of sowing seeds manually by hand is called:", a: ["Tilling", "Broadcasting", "Ploughing", "Weeding"], c: 1 },
+        { q: "Which cell organelle is called the 'Powerhouse of the cell'?", a: ["Nucleus", "Mitochondria", "Vacuole", "Ribosome"], c: 1 },
+        { q: "Force per unit area is called:", a: ["Work", "Energy", "Pressure", "Friction"], c: 2 },
+        { q: "The vibration of an object produces:", a: ["Heat", "Light", "Sound", "Electricity"], c: 2 },
+        { q: "Which gas is used in fire extinguishers?", a: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"], c: 2 },
+        { q: "The plastic that cannot be remoulded after heating is:", a: ["Thermoplastic", "Thermosetting plastic", "PVC", "Polythene"], c: 1 },
+        { q: "Sound cannot travel through:", a: ["Air", "Water", "Steel", "Vacuum"], c: 3 },
+        { q: "The SI unit of force is:", a: ["Joule", "Newton", "Pascal", "Watt"], c: 1 },
+        { q: "A tadpole develops into an adult frog by the process of:", a: ["Fertilization", "Metamorphosis", "Embedding", "Budding"], c: 1 }
     ];
 
-    let currentStep = 0;
-    const chatWindow = document.getElementById("chat-window");
-    const topicBtn = document.getElementById("topic-btn");
-    const nextBtn = document.getElementById("next-btn");
-    const controlsDiv = document.getElementById("controls");
+    let current = 0;
+    let score = 0;
 
-    function askQuestion() {
-        if (currentStep >= quizData.length) return;
-
-        const data = quizData[currentStep];
-
-        // 1. Add User Bubble
-        addBubble(data.q, 'user-msg');
+    function initQuiz() {
+        const data = quizData[current];
+        document.getElementById("q-text").innerText = data.q;
+        document.getElementById("q-number").innerText = `Question ${current + 1} of 10`;
+        document.getElementById("progress-fill").style.width = ((current + 1) / 10 * 100) + "%";
         
-        // 2. Hide Question Button
-        topicBtn.style.display = 'none';
-
-        // 3. Simulate "Typing..." then stream answer
-        setTimeout(() => {
-            const botBubble = document.createElement("div");
-            botBubble.className = "message bot-msg";
-            chatWindow.appendChild(botBubble);
-            
-            // Auto scroll
-            chatWindow.scrollTop = chatWindow.scrollHeight;
-
-            // Stream Text Effect
-            streamText(data.a, botBubble, () => {
-                // When streaming finishes:
-                nextBtn.style.display = 'block';
-                chatWindow.scrollTop = chatWindow.scrollHeight;
-            });
-
-        }, 600);
+        const container = document.getElementById("opt-container");
+        container.innerHTML = "";
+        
+        data.a.forEach((opt, i) => {
+            const btn = document.createElement("div");
+            btn.className = "opt-btn";
+            btn.innerHTML = opt;
+            btn.onclick = () => checkAns(i, btn);
+            container.appendChild(btn);
+        });
+        document.getElementById("next-btn").style.display = "none";
     }
 
-    function nextQuestion() {
-        currentStep++;
-        nextBtn.style.display = 'none';
+    function checkAns(idx, btn) {
+        const correct = quizData[current].c;
+        const allBtns = document.querySelectorAll(".opt-btn");
+        allBtns.forEach(b => b.style.pointerEvents = "none");
 
-        if (currentStep < quizData.length) {
-            // Update button text for next question
-            topicBtn.innerText = `Topic ${currentStep + 1}: ${quizData[currentStep].q}`;
-            topicBtn.style.display = 'block';
-            
-            // Auto scroll
-            chatWindow.scrollTop = chatWindow.scrollHeight;
+        if(idx === correct) {
+            btn.classList.add("correct");
+            score++;
         } else {
-            // === LOGIC TO HIDE CONTROLS & SHOW FINAL SCREEN ===
-            
-            // 1. Hide the bottom controls completely
-            controlsDiv.style.display = 'none'; 
-            
-            // 2. Show Final Screen with Slide Up Animation
-            document.getElementById("final-screen").style.display = "flex";
+            btn.classList.add("wrong");
+            allBtns[correct].classList.add("correct");
+        }
+        document.getElementById("next-btn").style.display = "block";
+    }
+
+    function loadNext() {
+        current++;
+        if(current < quizData.length) {
+            initQuiz();
+        } else {
+            document.getElementById("quiz-ui").style.display = "none";
+            document.getElementById("result-ui").style.display = "block";
+            document.getElementById("score-text").innerText = `${score}/10`;
         }
     }
 
-    // Helper: Add bubble instantly
-    function addBubble(text, type) {
-        const div = document.createElement("div");
-        div.className = `message ${type}`;
-        div.innerText = text;
-        chatWindow.appendChild(div);
-        chatWindow.scrollTop = chatWindow.scrollHeight;
-    }
-
-    // Helper: Stream text like a bot
-    function streamText(text, element, callback) {
-        let i = 0;
-        let speed = 25; // Speed of typing
-        
-        function type() {
-            if (i < text.length) {
-                element.innerHTML += text.charAt(i);
-                i++;
-                chatWindow.scrollTop = chatWindow.scrollHeight; // Keep scrolling
-                setTimeout(type, speed);
-            } else {
-                if (callback) callback();
-            }
-        }
-        type();
-    }
-
-    // Initialize first button
-    topicBtn.innerText = `Topic 1: ${quizData[0].q}`;
-
+    initQuiz();
 </script>
 
 </body>
